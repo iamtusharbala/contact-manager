@@ -1,5 +1,6 @@
 import User from "../models/userModel.js";
 import Contact from "../models/contactModel.js";
+import bcrypt from "bcrypt";
 
 //login contoller
 export const login = async (req, res, next) => {
@@ -7,7 +8,8 @@ export const login = async (req, res, next) => {
     const { email, password } = req.body;
     const check = await User.findOne({ email });
     if (check) {
-      if (password == check.password) {
+      const checkPassword = bcrypt.compareSync(password, check.password);
+      if (checkPassword) {
         return res.status(200).json({
           status: true,
           message: "User logged in successfully...",
@@ -32,7 +34,6 @@ export const register = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const check = await User.findOne({ email });
-    console.log(check);
     if (check) {
       return res.status(409).json({
         status: false,
@@ -40,7 +41,8 @@ export const register = async (req, res, next) => {
       });
     }
 
-    const createUser = await User.create({ email, password });
+    const hashPass = bcrypt.hashSync(password, 10);
+    const createUser = await User.create({ email, password: hashPass });
     if (createUser) {
       return res.status(201).json({
         status: true,
@@ -119,6 +121,7 @@ export const getContactById = async (req, res, next) => {
   }
 };
 
+//update Contact
 export const updateContactById = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -145,6 +148,7 @@ export const updateContactById = async (req, res, next) => {
   }
 };
 
+//Delete contact
 export const deleteContactById = async (req, res, next) => {
   try {
     const { id } = req.params;
