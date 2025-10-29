@@ -2,11 +2,12 @@ import User from "../models/userModel.js";
 import Contact from "../models/contactModel.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { comparePassword, passwordHash } from "../utils/passwordHash.js";
 
 //login contoller
 
 const createToken = (id) => {
-  const token = jwt.sign({id}, process.env.JWT_SECRET, { expiresIn: "1d" });
+  const token = jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1d" });
   return token;
 };
 
@@ -15,14 +16,14 @@ export const login = async (req, res, next) => {
     const { email, password } = req.body;
     const check = await User.findOne({ email });
     if (check) {
-      const checkPassword = bcrypt.compareSync(password, check.password);
+      const checkPassword = comparePassword(password, check.password);
       if (checkPassword) {
         const token = createToken(check._id);
 
         return res.status(200).json({
           status: true,
           message: "User logged in successfully...",
-          token
+          token,
         });
       }
       return res.status(400).json({
@@ -51,7 +52,7 @@ export const register = async (req, res, next) => {
       });
     }
 
-    const hashPass = bcrypt.hashSync(password, 10);
+    const hashPass = passwordHash(password);
     const createUser = await User.create({ email, password: hashPass });
     if (createUser) {
       return res.status(201).json({
@@ -173,6 +174,56 @@ export const deleteContactById = async (req, res, next) => {
     return res.status(400).json({
       status: false,
       message: "Contact doesn't exist...",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+//Get User Profile
+
+export const getUserProfile = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const checkUser = await User.findById(userId);
+    if (!checkUser) {
+      return res.status(400).json({
+        status: false,
+        message: "User does not exist...",
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      message: "Profile fetched successfully",
+      data: req.user,
+      user: checkUser,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+//Update User Profile
+export const updateUserProfile = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { email, password } = req.body;
+    const checkUser = await User.findByIdAndUpdate(
+      userId,
+      { email, password: passwordHash(password) },
+      { new: true }
+    );
+    if (!checkUser) {
+      return res.status(400).json({
+        status: false,
+        message: "User does not exist...",
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      message: "Profile Updated successfully",
+      data: req.user,
+      user: checkUser,
     });
   } catch (error) {
     next(error);

@@ -7,6 +7,8 @@ import {
   getContactById,
   updateContactById,
   deleteContactById,
+  getUserProfile,
+  updateUserProfile,
 } from "../controllers/controller.js";
 import { auth } from "../middlewares/auth.js";
 
@@ -22,5 +24,9 @@ router
 router
   .get("/contacts", auth, getAllContacts)
   .post("/contacts", auth, createContact);
+
+router
+  .get("/users/profile", auth, getUserProfile)
+  .put("/users/profile", auth, updateUserProfile);
 
 export default router;
