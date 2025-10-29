@@ -1,8 +1,15 @@
 import User from "../models/userModel.js";
 import Contact from "../models/contactModel.js";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 //login contoller
+
+const createToken = (id) => {
+  const token = jwt.sign({id}, process.env.JWT_SECRET, { expiresIn: "1d" });
+  return token;
+};
+
 export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -10,9 +17,12 @@ export const login = async (req, res, next) => {
     if (check) {
       const checkPassword = bcrypt.compareSync(password, check.password);
       if (checkPassword) {
+        const token = createToken(check._id);
+
         return res.status(200).json({
           status: true,
           message: "User logged in successfully...",
+          token
         });
       }
       return res.status(400).json({

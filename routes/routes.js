@@ -8,6 +8,7 @@ import {
   updateContactById,
   deleteContactById,
 } from "../controllers/controller.js";
+import { auth } from "../middlewares/auth.js";
 
 const router = express.Router();
 
@@ -15,9 +16,11 @@ const router = express.Router();
 router.post("/auth/login", login);
 router.post("/auth/register", register);
 router
-  .get("/contacts/:id", getContactById)
-  .put("/contacts/:id", updateContactById)
-  .delete("/contacts/:id", deleteContactById);
-router.get("/contacts", getAllContacts).post("/contacts", createContact);
+  .get("/contacts/:id", auth, getContactById)
+  .put("/contacts/:id", auth, updateContactById)
+  .delete("/contacts/:id", auth, deleteContactById);
+router
+  .get("/contacts", auth, getAllContacts)
+  .post("/contacts", auth, createContact);
 
 export default router;
