@@ -21,7 +21,7 @@ A RESTful API for managing contacts built with Node.js and Express.
 
 1. Clone the repository:
 ```bash
-git clone <your-repo-url>
+gh repo clone iamtusharbala/contact-manager
 cd contact-manager
 ```
 
